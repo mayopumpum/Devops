@@ -1,0 +1,48 @@
+stages:
+  - build
+  - style
+  - test
+  - deploy
+
+Build:
+  stage: build
+  script:
+    - cd src/cat
+    - make s21_cat
+    - cd ../grep
+    - make s21_grep
+  artifacts:
+    paths:
+      - src/cat/s21_cat
+      - src/grep/s21_grep
+    expire_in: 30 days
+  after_script:
+    - sh src/telegram.sh "BUILD $CI_JOB_STATUS"
+
+STYLE:
+  stage: style
+  script:
+    - cd src
+    - clang-format -n --Werror cat/*.c grep/*.c
+  after_script:
+    - sh src/telegram.sh "STYLE $CI_JOB_STATUS"
+
+TEST:
+  stage: test
+  script:
+    - cd src/cat
+    - make test
+    - cd ../grep
+    - make test
+  after_script:
+    - sh src/telegram.sh "TEST $CI_JOB_STATUS"
+
+DEPLOY:
+  stage: deploy
+  when: manual
+  script:
+    - echo "Deploy"
+    - chmod +x src/deploy.sh
+    - sh src/deploy.sh
+  after_script:
+    - sh src/telegram.sh "DEPLOY $CI_JOB_STATUS"
