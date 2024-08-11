@@ -1,0 +1,13 @@
+services:
+    nginx:
+        image: nginx
+        ports:
+            - 80:8080
+        volumes:
+            - ./nginx:/etc/nginx
+        restart: always
+
+    server:
+        depends_on:
+            - nginx
+        build: ./server
